@@ -2,6 +2,11 @@
 
 import { useState } from 'react'
 import { Code2, Copy, RotateCcw, Check, Loader2, Sparkles, Shield, RefreshCw, TestTube, Activity, Languages, BookOpen } from 'lucide-react'
+import ReactMarkdown from 'react-markdown'
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
+import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism'
+import { Panel, PanelGroup, PanelResizeHandle } from 'react-resizable-panels'
+
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://codedoc-backend-n2p8.onrender.com'
 const LANGUAGES = ['Python', 'JavaScript', 'TypeScript', 'Java', 'C++', 'Go', 'Rust', 'PHP', 'Ruby', 'Swift', 'Kotlin', 'C#']
 
@@ -59,7 +64,7 @@ export default function CodeAnalyzer() {
       const data = await response.json()
       setOutput(data.result)
     } catch (err) {
-      setError('Failed to analyze code. Make sure the backend is running.')
+      setError('Failed to analyze code. Backend may be waking up (takes 30-60s on free tier).')
       console.error(err)
     } finally {
       setLoading(false)
@@ -97,9 +102,8 @@ export default function CodeAnalyzer() {
 
   return (
     <div className="min-h-screen bg-gray-900 text-gray-100 flex flex-col">
-      {/* Header */}
       <header className="glass-card border-b border-violet-500/20 sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <div className="max-w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <div className="relative">
@@ -125,9 +129,8 @@ export default function CodeAnalyzer() {
         </div>
       </header>
 
-      {/* Feature Tabs */}
       <div className="border-b border-gray-800 bg-gray-900/50 sticky top-[88px] z-40">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-full mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex gap-2 overflow-x-auto py-4">
             {FEATURES.map((feature) => {
               const Icon = feature.icon
@@ -152,132 +155,163 @@ export default function CodeAnalyzer() {
         </div>
       </div>
 
-      {/* Main Content */}
-      <main className="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
-          {/* Input Section */}
-          <div className="flex flex-col gap-4 lg:col-span-3">
-            <div className="flex items-center justify-between gap-4">
-              <select
-                value={language}
-                onChange={(e) => setLanguage(e.target.value)}
-                className="px-4 py-2.5 border-2 border-violet-500/30 bg-gray-800 rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-500 text-gray-100 font-medium text-sm"
-              >
-                {LANGUAGES.map((lang) => (
-                  <option key={lang} value={lang}>{lang}</option>
-                ))}
-              </select>
-
-              {currentFeature?.needsTarget && (
-                <>
-                  <span className="text-gray-400">→</span>
-                  <select
-                    value={targetLanguage}
-                    onChange={(e) => setTargetLanguage(e.target.value)}
-                    className="px-4 py-2.5 border-2 border-amber-500/30 bg-gray-800 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500 text-gray-100 font-medium text-sm"
-                  >
-                    {LANGUAGES.map((lang) => (
-                      <option key={lang} value={lang}>{lang}</option>
-                    ))}
-                  </select>
-                </>
-              )}
-            </div>
-
-            <textarea
-              value={code}
-              onChange={(e) => setCode(e.target.value)}
-              placeholder="Paste your code here..."
-              className="flex-1 w-full p-5 font-mono text-sm code-editor text-gray-100 border-2 border-violet-500/30 rounded-2xl resize-none focus:outline-none focus:ring-2 focus:ring-violet-500 shadow-xl min-h-[500px]"
-            />
-
-            <button
-              onClick={handleAnalyze}
-              disabled={loading}
-              className={`px-6 py-4 ${getColorClasses(currentFeature?.color || 'violet').bg} ${getColorClasses(currentFeature?.color || 'violet').hover} text-white font-bold rounded-xl transition-all disabled:opacity-50 flex items-center justify-center gap-2 shadow-lg`}
-            >
-              {loading ? (
-                <>
-                  <Loader2 className="w-5 h-5 animate-spin" />
-                  Analyzing...
-                </>
-              ) : (
-                <>
-                  {currentFeature && <currentFeature.icon className="w-5 h-5" />}
-                  {currentFeature?.name}
-                </>
-              )}
-            </button>
-
-            {error && (
-              <div className="p-4 bg-red-900/30 border-2 border-red-500/50 rounded-xl text-red-300 text-sm">
-                {error}
-              </div>
-            )}
-          </div>
-
-          {/* Output Section */}
-          <div className="flex flex-col gap-4 lg:col-span-2">
-            <div className="flex items-center justify-between">
-              <h2 className="text-lg font-bold text-gray-100">AI Analysis</h2>
-              <div className="flex gap-2">
-                {output && (
-                  <button
-                    onClick={handleCopy}
-                    className="px-4 py-2 bg-emerald-600/20 hover:bg-emerald-600/30 border-2 border-emerald-500/30 rounded-xl transition-all flex items-center gap-2"
-                  >
-                    {copied ? (
-                      <>
-                        <Check className="w-4 h-4 text-emerald-400" />
-                        <span className="text-sm text-emerald-400">Copied!</span>
-                      </>
-                    ) : (
-                      <>
-                        <Copy className="w-4 h-4 text-emerald-400" />
-                        <span className="text-sm text-emerald-400">Copy</span>
-                      </>
-                    )}
-                  </button>
-                )}
-                <button
-                  onClick={handleReset}
-                  className="px-4 py-2 bg-gray-800 hover:bg-gray-700 border-2 border-gray-600 rounded-xl transition-all flex items-center gap-2"
+      <main className="flex-1 w-full px-4 sm:px-6 lg:px-8 py-8">
+        <PanelGroup direction="horizontal" className="h-[calc(100vh-18rem)]">
+          <Panel defaultSize={60} minSize={30}>
+            <div className="flex flex-col gap-4 h-full pr-3">
+              <div className="flex items-center justify-between gap-4">
+                <select
+                  value={language}
+                  onChange={(e) => setLanguage(e.target.value)}
+                  className="px-4 py-2.5 border-2 border-violet-500/30 bg-gray-800 rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-500 text-gray-100 font-medium text-sm"
                 >
-                  <RotateCcw className="w-4 h-4 text-gray-400" />
-                  <span className="text-sm text-gray-400">Reset</span>
-                </button>
-              </div>
-            </div>
+                  {LANGUAGES.map((lang) => (
+                    <option key={lang} value={lang}>{lang}</option>
+                  ))}
+                </select>
 
-            <div className="flex-1 glass-card p-6 rounded-2xl overflow-auto shadow-xl min-h-[500px]">
-              {loading ? (
-                <div className="flex flex-col items-center justify-center h-full gap-4">
-                  <Loader2 className="w-16 h-16 animate-spin text-violet-500" />
-                  <p className="text-gray-300 font-semibold">Analyzing with GPT-4...</p>
-                  <p className="text-gray-500 text-sm">This should be fast</p>
-                </div>
-              ) : output ? (
-                <div className="text-sm text-gray-300 leading-relaxed whitespace-pre-wrap font-mono bg-gray-800/50 p-6 rounded-xl border border-violet-500/20">
-                  {output}
-                </div>
-              ) : (
-                <div className="flex flex-col items-center justify-center h-full text-center gap-4">
-                  <div className={`p-6 rounded-2xl border ${getColorClasses(currentFeature?.color || 'violet').border}`}>
-                    {currentFeature && <currentFeature.icon className={`w-12 h-12 mx-auto ${getColorClasses(currentFeature.color).text}`} />}
-                  </div>
-                  <p className="text-gray-300 font-semibold">
-                    Ready to analyze with {currentFeature?.name}
-                  </p>
+                {currentFeature?.needsTarget && (
+                  <>
+                    <span className="text-gray-400">→</span>
+                    <select
+                      value={targetLanguage}
+                      onChange={(e) => setTargetLanguage(e.target.value)}
+                      className="px-4 py-2.5 border-2 border-amber-500/30 bg-gray-800 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500 text-gray-100 font-medium text-sm"
+                    >
+                      {LANGUAGES.map((lang) => (
+                        <option key={lang} value={lang}>{lang}</option>
+                      ))}
+                    </select>
+                  </>
+                )}
+              </div>
+
+              <textarea
+                value={code}
+                onChange={(e) => setCode(e.target.value)}
+                placeholder="Paste your code here..."
+                className="flex-1 w-full p-5 font-mono text-sm code-editor text-gray-100 border-2 border-violet-500/30 rounded-2xl resize-none focus:outline-none focus:ring-2 focus:ring-violet-500 shadow-xl"
+              />
+
+              <button
+                onClick={handleAnalyze}
+                disabled={loading}
+                className={`px-6 py-4 ${getColorClasses(currentFeature?.color || 'violet').bg} ${getColorClasses(currentFeature?.color || 'violet').hover} text-white font-bold rounded-xl transition-all disabled:opacity-50 flex items-center justify-center gap-2 shadow-lg`}
+              >
+                {loading ? (
+                  <>
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                    Analyzing...
+                  </>
+                ) : (
+                  <>
+                    {currentFeature && <currentFeature.icon className="w-5 h-5" />}
+                    {currentFeature?.name}
+                  </>
+                )}
+              </button>
+
+              {error && (
+                <div className="p-4 bg-red-900/30 border-2 border-red-500/50 rounded-xl text-red-300 text-sm">
+                  {error}
                 </div>
               )}
             </div>
-          </div>
-        </div>
+          </Panel>
+
+          <PanelResizeHandle className="w-2 bg-gray-700 hover:bg-violet-500 transition-colors mx-2 rounded-full cursor-col-resize flex items-center justify-center">
+            <div className="w-1 h-8 bg-gray-500 rounded-full"></div>
+          </PanelResizeHandle>
+
+          <Panel defaultSize={40} minSize={25}>
+            <div className="flex flex-col gap-4 h-full pl-3">
+              <div className="flex items-center justify-between">
+                <h2 className="text-lg font-bold text-gray-100">AI Analysis</h2>
+                <div className="flex gap-2">
+                  {output && (
+                    <button
+                      onClick={handleCopy}
+                      className="px-4 py-2 bg-emerald-600/20 hover:bg-emerald-600/30 border-2 border-emerald-500/30 rounded-xl transition-all flex items-center gap-2"
+                    >
+                      {copied ? (
+                        <>
+                          <Check className="w-4 h-4 text-emerald-400" />
+                          <span className="text-sm text-emerald-400">Copied!</span>
+                        </>
+                      ) : (
+                        <>
+                          <Copy className="w-4 h-4 text-emerald-400" />
+                          <span className="text-sm text-emerald-400">Copy</span>
+                        </>
+                      )}
+                    </button>
+                  )}
+                  <button
+                    onClick={handleReset}
+                    className="px-4 py-2 bg-gray-800 hover:bg-gray-700 border-2 border-gray-600 rounded-xl transition-all flex items-center gap-2"
+                  >
+                    <RotateCcw className="w-4 h-4 text-gray-400" />
+                    <span className="text-sm text-gray-400">Reset</span>
+                  </button>
+                </div>
+              </div>
+
+              <div className="flex-1 glass-card p-6 rounded-2xl overflow-auto shadow-xl">
+                {loading ? (
+                  <div className="flex flex-col items-center justify-center h-full gap-4">
+                    <Loader2 className="w-16 h-16 animate-spin text-violet-500" />
+                    <p className="text-gray-300 font-semibold">Analyzing with GPT-4...</p>
+                  </div>
+                ) : output ? (
+                  <ReactMarkdown
+                    components={{
+                      code: ({inline, className, children, ...props}: any) => {
+                        const match = /language-(\w+)/.exec(className || '')
+                        return !inline && match ? (
+                          <SyntaxHighlighter
+                            style={vscDarkPlus}
+                            language={match[1]}
+                            PreTag="div"
+                            className="rounded-lg my-4"
+                          >
+                            {String(children).replace(/\n$/, '')}
+                          </SyntaxHighlighter>
+                        ) : (
+                          <code className="bg-violet-900/30 px-2 py-0.5 rounded text-violet-300 font-mono text-sm">
+                            {children}
+                          </code>
+                        )
+                      },
+                      p: ({children}: any) => <p className="mb-4 text-gray-300 leading-relaxed">{children}</p>,
+                      h1: ({children}: any) => <h1 className="text-2xl font-bold mb-4 mt-6 text-violet-300">{children}</h1>,
+                      h2: ({children}: any) => <h2 className="text-xl font-bold mb-3 mt-5 text-violet-300">{children}</h2>,
+                      h3: ({children}: any) => <h3 className="text-lg font-bold mb-2 mt-4 text-violet-300">{children}</h3>,
+                      ul: ({children}: any) => <ul className="list-disc list-inside mb-4 space-y-1 text-gray-300">{children}</ul>,
+                      ol: ({children}: any) => <ol className="list-decimal list-inside mb-4 space-y-1 text-gray-300">{children}</ol>,
+                      strong: ({children}: any) => <strong className="font-bold text-violet-300">{children}</strong>,
+                    }}
+                  >
+                    {output}
+                  </ReactMarkdown>
+                ) : (
+                  <div className="flex flex-col items-center justify-center h-full text-center gap-4">
+                    <div className={`p-6 rounded-2xl border ${getColorClasses(currentFeature?.color || 'violet').border}`}>
+                      {currentFeature && <currentFeature.icon className={`w-12 h-12 mx-auto ${getColorClasses(currentFeature.color).text}`} />}
+                    </div>
+                    <p className="text-gray-300 font-semibold">
+                      Ready to analyze with {currentFeature?.name}
+                    </p>
+                    <p className="text-gray-500 text-sm">Drag the divider to resize panels</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          </Panel>
+        </PanelGroup>
       </main>
 
-      {/* Footer */}
       <footer className="glass-card border-t border-violet-500/20 mt-auto">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+        <div className="max-w-full mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <p className="text-center text-sm text-gray-400">
             Built with <span className="text-pink-500">❤</span> using FastAPI, Next.js & OpenAI GPT-4
           </p>
