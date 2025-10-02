@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { Code2, Copy, RotateCcw, Check, Loader2, Sparkles, Shield, RefreshCw, TestTube, Activity, Languages, BookOpen } from 'lucide-react'
-
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://codedoc-backend-n2p8.onrender.com'
 const LANGUAGES = ['Python', 'JavaScript', 'TypeScript', 'Java', 'C++', 'Go', 'Rust', 'PHP', 'Ruby', 'Swift', 'Kotlin', 'C#']
 
 const FEATURES = [
@@ -48,7 +48,7 @@ export default function CodeAnalyzer() {
         body.target_language = targetLanguage.toLowerCase()
       }
 
-      const response = await fetch(`http://localhost:8000${currentFeature?.endpoint}`, {
+      const response = await fetch(`${API_URL}${currentFeature?.endpoint}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body)
