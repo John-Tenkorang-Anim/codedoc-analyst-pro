@@ -438,7 +438,7 @@ MIT License - See LICENSE file for details
 
 ## Author
 
-[Your Name] - [Your GitHub Profile]
+[John Tenkorang Anim] - [github.com//John-Tenkorang-Anim]
 
 ---
 
