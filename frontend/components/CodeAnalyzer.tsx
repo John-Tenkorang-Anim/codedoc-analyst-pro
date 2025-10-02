@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { Code2, Copy, RotateCcw, Check, Loader2, Sparkles, Shield, RefreshCw, TestTube, Activity, Languages, BookOpen } from 'lucide-react'
 import ReactMarkdown from 'react-markdown'
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
@@ -34,8 +34,18 @@ export default function CodeAnalyzer() {
   const [error, setError] = useState('')
   const [copied, setCopied] = useState(false)
   const [activeFeature, setActiveFeature] = useState(FEATURES[0].id)
+  const textareaRef = useRef<HTMLTextAreaElement>(null)
 
   const currentFeature = FEATURES.find(f => f.id === activeFeature)
+
+  // Auto-resize textarea based on content
+  useEffect(() => {
+    if (textareaRef.current) {
+      textareaRef.current.style.height = 'auto'
+      const scrollHeight = textareaRef.current.scrollHeight
+      textareaRef.current.style.height = Math.min(scrollHeight, 500) + 'px'
+    }
+  }, [code])
 
   const handleAnalyze = async () => {
     if (!code.trim()) {
@@ -157,65 +167,69 @@ export default function CodeAnalyzer() {
 
       <main className="flex-1 w-full px-4 sm:px-6 lg:px-8 py-8">
         <PanelGroup direction="horizontal" className="h-[calc(100vh-18rem)]">
-          <Panel defaultSize={60} minSize={30}>
-            <div className="flex flex-col gap-4 h-full pr-3">
-              <div className="flex items-center justify-between gap-4">
-                <select
-                  value={language}
-                  onChange={(e) => setLanguage(e.target.value)}
-                  className="px-4 py-2.5 border-2 border-violet-500/30 bg-gray-800 rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-500 text-gray-100 font-medium text-sm"
-                >
-                  {LANGUAGES.map((lang) => (
-                    <option key={lang} value={lang}>{lang}</option>
-                  ))}
-                </select>
+          <Panel defaultSize={55} minSize={30}>
+            <div className="h-full pr-3 overflow-y-auto">
+              <div className="flex flex-col gap-4">
+                <div className="flex items-center justify-between gap-4">
+                  <select
+                    value={language}
+                    onChange={(e) => setLanguage(e.target.value)}
+                    className="px-4 py-2.5 border-2 border-violet-500/30 bg-gray-800 rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-500 text-gray-100 font-medium text-sm"
+                  >
+                    {LANGUAGES.map((lang) => (
+                      <option key={lang} value={lang}>{lang}</option>
+                    ))}
+                  </select>
 
-                {currentFeature?.needsTarget && (
-                  <>
-                    <span className="text-gray-400">→</span>
-                    <select
-                      value={targetLanguage}
-                      onChange={(e) => setTargetLanguage(e.target.value)}
-                      className="px-4 py-2.5 border-2 border-amber-500/30 bg-gray-800 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500 text-gray-100 font-medium text-sm"
-                    >
-                      {LANGUAGES.map((lang) => (
-                        <option key={lang} value={lang}>{lang}</option>
-                      ))}
-                    </select>
-                  </>
+                  {currentFeature?.needsTarget && (
+                    <>
+                      <span className="text-gray-400">→</span>
+                      <select
+                        value={targetLanguage}
+                        onChange={(e) => setTargetLanguage(e.target.value)}
+                        className="px-4 py-2.5 border-2 border-amber-500/30 bg-gray-800 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500 text-gray-100 font-medium text-sm"
+                      >
+                        {LANGUAGES.map((lang) => (
+                          <option key={lang} value={lang}>{lang}</option>
+                        ))}
+                      </select>
+                    </>
+                  )}
+                </div>
+
+                <textarea
+                  ref={textareaRef}
+                  value={code}
+                  onChange={(e) => setCode(e.target.value)}
+                  placeholder="Paste your code here..."
+                  className="w-full p-5 font-mono text-sm code-editor text-gray-100 border-2 border-violet-500/30 rounded-2xl resize-none focus:outline-none focus:ring-2 focus:ring-violet-500 shadow-xl overflow-hidden"
+                  style={{ minHeight: '150px', maxHeight: '500px' }}
+                />
+
+                <button
+                  onClick={handleAnalyze}
+                  disabled={loading}
+                  className={`px-6 py-4 ${getColorClasses(currentFeature?.color || 'violet').bg} ${getColorClasses(currentFeature?.color || 'violet').hover} text-white font-bold rounded-xl transition-all disabled:opacity-50 flex items-center justify-center gap-2 shadow-lg`}
+                >
+                  {loading ? (
+                    <>
+                      <Loader2 className="w-5 h-5 animate-spin" />
+                      Analyzing...
+                    </>
+                  ) : (
+                    <>
+                      {currentFeature && <currentFeature.icon className="w-5 h-5" />}
+                      {currentFeature?.name}
+                    </>
+                  )}
+                </button>
+
+                {error && (
+                  <div className="p-4 bg-red-900/30 border-2 border-red-500/50 rounded-xl text-red-300 text-sm">
+                    {error}
+                  </div>
                 )}
               </div>
-
-              <textarea
-                value={code}
-                onChange={(e) => setCode(e.target.value)}
-                placeholder="Paste your code here..."
-                className="flex-1 w-full p-5 font-mono text-sm code-editor text-gray-100 border-2 border-violet-500/30 rounded-2xl resize-none focus:outline-none focus:ring-2 focus:ring-violet-500 shadow-xl"
-              />
-
-              <button
-                onClick={handleAnalyze}
-                disabled={loading}
-                className={`px-6 py-4 ${getColorClasses(currentFeature?.color || 'violet').bg} ${getColorClasses(currentFeature?.color || 'violet').hover} text-white font-bold rounded-xl transition-all disabled:opacity-50 flex items-center justify-center gap-2 shadow-lg`}
-              >
-                {loading ? (
-                  <>
-                    <Loader2 className="w-5 h-5 animate-spin" />
-                    Analyzing...
-                  </>
-                ) : (
-                  <>
-                    {currentFeature && <currentFeature.icon className="w-5 h-5" />}
-                    {currentFeature?.name}
-                  </>
-                )}
-              </button>
-
-              {error && (
-                <div className="p-4 bg-red-900/30 border-2 border-red-500/50 rounded-xl text-red-300 text-sm">
-                  {error}
-                </div>
-              )}
             </div>
           </Panel>
 
@@ -223,9 +237,9 @@ export default function CodeAnalyzer() {
             <div className="w-1 h-8 bg-gray-500 rounded-full"></div>
           </PanelResizeHandle>
 
-          <Panel defaultSize={40} minSize={25}>
-            <div className="flex flex-col gap-4 h-full pl-3">
-              <div className="flex items-center justify-between">
+          <Panel defaultSize={45} minSize={25}>
+            <div className="flex flex-col h-full pl-3">
+              <div className="flex items-center justify-between mb-4">
                 <h2 className="text-lg font-bold text-gray-100">AI Analysis</h2>
                 <div className="flex gap-2">
                   {output && (
@@ -256,7 +270,7 @@ export default function CodeAnalyzer() {
                 </div>
               </div>
 
-              <div className="flex-1 glass-card p-6 rounded-2xl overflow-auto shadow-xl">
+              <div className="flex-1 glass-card p-6 rounded-2xl overflow-y-auto shadow-xl">
                 {loading ? (
                   <div className="flex flex-col items-center justify-center h-full gap-4">
                     <Loader2 className="w-16 h-16 animate-spin text-violet-500" />
