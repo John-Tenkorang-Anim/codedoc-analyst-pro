@@ -165,7 +165,7 @@ export default function CodeAnalyzer() {
       </div>
 
       <main className="flex-1 w-full px-4 sm:px-6 lg:px-8 py-8">
-        <PanelGroup direction="horizontal" className="h-[calc(100vh-18rem)]">
+        <PanelGroup direction="horizontal" className="hidden lg:flex h-[calc(100vh-18rem)]">
           <Panel defaultSize={55} minSize={30}>
             <div className="h-full pr-3 overflow-y-auto">
               <div className="flex flex-col gap-4">

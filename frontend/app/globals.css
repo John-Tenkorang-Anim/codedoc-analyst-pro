@@ -40,6 +40,15 @@
     background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
   }
 
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+
   /* Custom scrollbar for code editor */
   .code-editor::-webkit-scrollbar {
     width: 10px;
