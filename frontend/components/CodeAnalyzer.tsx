@@ -38,7 +38,6 @@ export default function CodeAnalyzer() {
 
   const currentFeature = FEATURES.find(f => f.id === activeFeature)
 
-  // Auto-resize textarea based on content
   useEffect(() => {
     if (textareaRef.current) {
       textareaRef.current.style.height = 'auto'
@@ -202,7 +201,7 @@ export default function CodeAnalyzer() {
                   value={code}
                   onChange={(e) => setCode(e.target.value)}
                   placeholder="Paste your code here..."
-                  className="w-full p-5 font-mono text-sm code-editor text-gray-100 border-2 border-violet-500/30 rounded-2xl resize-none focus:outline-none focus:ring-2 focus:ring-violet-500 shadow-xl overflow-hidden"
+                  className="w-full p-5 font-mono text-sm code-editor text-gray-100 border-2 border-violet-500/30 rounded-2xl resize-none focus:outline-none focus:ring-2 focus:ring-violet-500 shadow-xl overflow-y-auto"
                   style={{ minHeight: '150px', maxHeight: '500px' }}
                 />
 
@@ -315,7 +314,6 @@ export default function CodeAnalyzer() {
                     <p className="text-gray-300 font-semibold">
                       Ready to analyze with {currentFeature?.name}
                     </p>
-                    <p className="text-gray-500 text-sm">Drag the divider to resize panels</p>
                   </div>
                 )}
               </div>
